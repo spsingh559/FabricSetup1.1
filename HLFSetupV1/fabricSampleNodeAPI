@@ -1,0 +1,62 @@
+Register and enroll new users in Organization - Org1:
+curl -s -X POST http://localhost:4000/users -H "content-type: application/x-www-form-urlencoded" -d 'username=Jim&orgName=Org1'
+
+Create Channel request
+
+curl -s -X POST \
+  http://localhost:4000/channels \
+  -H "authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1MzU1MDkwNDYsInVzZXJuYW1lIjoiSmltIiwib3JnTmFtZSI6Ik9yZzEiLCJpYXQiOjE1MzU0NzMwNDZ9.Go1FIwQqm1EofPhEu89WlWsg06XI3-rQdkFHWAE14R8" \
+  -H "content-type: application/json" \
+  -d '{
+	"channelName":"mychannel",
+	"channelConfigPath":"../artifacts/channel/channel-artifacts/mychannel.tx"
+}'
+
+Join Channel request - Join atleast 2 organisation for chaincode initialisation
+curl -s -X POST \
+  http://localhost:4000/channels/mychannel/peers \
+  -H "authorization: Bearer <put JSON Web Token here>" \
+  -H "content-type: application/json" \
+  -d '{
+	"peers": ["peer0.org1.example.com","peer1.org1.example.com"]
+}'
+
+
+Install Chaincode - go marbles for org1
+
+curl -s -X POST \
+  http://localhost:4000/chaincodes \
+  -H "authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1MzU1MDkwNDYsInVzZXJuYW1lIjoiSmltIiwib3JnTmFtZSI6Ik9yZzEiLCJpYXQiOjE1MzU0NzMwNDZ9.Go1FIwQqm1EofPhEu89WlWsg06XI3-rQdkFHWAE14R8" \
+  -H "content-type: application/json" \
+  -d '{
+	"peers": ["peer0.org1.example.com","peer1.org1.example.com"],
+	"chaincodeName":"marbles",
+	"chaincodePath":"github.com/marbles02",
+	"chaincodeType": "golang",
+	"chaincodeVersion":"v0"
+}'
+
+Instantiation of chain code - org1 - marbles
+curl -s -X POST \
+  http://localhost:4000/channels/mychannel/chaincodes \
+  -H "authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1MzU1MDk3MzYsInVzZXJuYW1lIjoiSmltIiwib3JnTmFtZSI6Ik9yZzEiLCJpYXQiOjE1MzU0NzM3MzZ9.YqF4rrDNdPR2wVqzDUOzybQjBxCCrybj8LkCAauuLM0" \
+  -H "content-type: application/json" \
+  -d '{
+	"peers": ["peer0.org1.example.com","peer1.org1.example.com"],
+	"chaincodeName":"marbles",
+	"chaincodeVersion":"v0",
+	"chaincodeType": "golang",
+	"args":["init"]
+}'
+
+Invoke chaincode - marbles by org1
+
+curl -s -X POST \
+  http://localhost:4000/channels/mychannel/chaincodes/marbles \
+  -H "authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1MzU1MDk3MzYsInVzZXJuYW1lIjoiSmltIiwib3JnTmFtZSI6Ik9yZzEiLCJpYXQiOjE1MzU0NzM3MzZ9.YqF4rrDNdPR2wVqzDUOzybQjBxCCrybj8LkCAauuLM0" \
+  -H "content-type: application/json" \
+  -d '{
+	"peers": ["peer0.org1.example.com","peer1.org1.example.com"],
+	"fcn":"initMarble",
+	"args":["marble1","blue","35","tom"]
+}'
